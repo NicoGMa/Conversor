@@ -23,4 +23,7 @@ jobs:
           pip install -r requirements.txt
  
       - name: Build Docker image #construye la imagen docker usando el dockerfile
-        run: docker build -t conversor-api:latest .
+        run: docker build -t nicom27/conversor:tagname .
+
+      - name: Docker push
+        run: docker push nicom27/conversor:tagname
