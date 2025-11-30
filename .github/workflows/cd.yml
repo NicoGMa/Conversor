@@ -1,0 +1,37 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Clona repo
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      #  Loguea en Docker Hub
+      - name: Docker login
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      # Build de imagen
+      - name: Build Docker image
+        run: docker build -t nicom27/conversor:latest .
+
+      #  sube imagen a Docker Hub
+      - name: Push Docker image
+        run: docker push nicom27/conversor:latest
+
+      #  Conecta a EC2 y ejecuta deploy.sh
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            ~/deploy/deploy.sh
