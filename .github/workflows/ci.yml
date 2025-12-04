@@ -13,12 +13,8 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Login to Docker Hub
-        run: echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-        env:
-          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
-
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
+         
       - name: Build Docker image
         run: docker build -t nicom27/conversor:${{ github.sha }} .
 
