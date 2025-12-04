@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3 #clona repo a la vm para asi acceder
+        uses: actions/checkout@v3
 
       - name: Login to Docker Hub
         run: echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
@@ -18,18 +18,15 @@ jobs:
           DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v4 #instala python 3.12
-        with:
-          python-version: 3.12
 
-      - name: Install dependencies #instala las dependencias que estan en requirements.txt
+      - name: Build Docker image
+        run: docker build -t nicom27/conversor:${{ github.sha }} .
+
+      - name: Push image (commit tag)
+        run: docker push nicom27/conversor:${{ github.sha }}
+
+      - name: Tag as latest  # cada vez que se genere una nueva imagen le cambia el nombre
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
- 
-      - name: Build Docker image #construye la imagen docker usando el dockerfile
-        run: docker build -t nicom27/conversor:tagname .
+          docker tag nicom27/conversor:${{ github.sha }} nicom27/conversor:latest
+          docker push nicom27/conversor:latest
 
-      - name: Docker push
-        run: docker push nicom27/conversor:tagname
